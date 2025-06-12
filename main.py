@@ -2,7 +2,7 @@ class Barge:
     def __init__(self, num_compartments, max_capacity):
         # Инициализация баржи с пустыми отсеками и ограничением по бочкам
         self.compartments = [[] for _ in range(num_compartments + 1)]  # индексация с 1
-        self.capacity = max_capacity
+        self.capacity = max_capacity     # ёмкость
         self.total_barrels = 0           # текущее количество бочек
         self.max_barrels = 0             # максимальное количество одновременно
         self.error = False
