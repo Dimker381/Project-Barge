@@ -1,10 +1,10 @@
 class Barge:
     def __init__(self, num_compartments, max_capacity):
         # Инициализация баржи с пустыми отсеками и ограничением по бочкам
-        self.compartments = [[] for _ in range(num_compartments + 1)]  # индексация с 1
-        self.capacity = max_capacity     # ёмкость
-        self.total_barrels = 0           # текущее количество бочек
-        self.max_barrels = 0             # максимальное количество одновременно
+        self.compartments = [[] for _ in range(num_compartments + 1)]  # индексация с 1 (отсеки)
+        self.capacity = max_capacity  # ёмкость
+        self.total_barrels = 0  # текущее количество бочек
+        self.max_barrels = 0  # максимальное количество одновременно
         self.error = False
         self.error_message = ""
 
@@ -102,24 +102,23 @@ def main():
         print("❌ Ошибка: значения N, K и P должны быть от 1 до 100000.")
         return
 
-    operations = []
-    print(f"\nВведите {n} операций:")
-    for i in range(n):
-        try:
-            line = input(f"[{i+1}] >>> ").strip()
-            operations.append(line)
-        except EOFError:
-            print("❌ Недостаточно строк ввода.")
-            return
-
     barge = Barge(k, p)
 
     # Последовательная обработка всех операций
-    for idx, op in enumerate(operations, start=1):
-        barge.process(op, idx)
+    i = 0
+    print(f"\nВведите {n} операций:")
+    while i < n:
+        op = input(f"[{i + 1}] >>> ").strip()
+        barge.process(op, i + 1)
+
         if barge.error:
-            print(f"\n❌ {barge.error_message}")
-            return
+            print(f"❌ {barge.error_message}")
+            print("🔁 Повторите ввод этой строки.\n")
+            barge.error = False
+            barge.error_message = ""
+            continue    # не увеличиваем счётчик — повтор ввода
+        else:
+            i += 1
 
     # Проверка на пустоту после маршрута
     if not barge.is_empty():
@@ -130,5 +129,5 @@ def main():
     print(f"\n✅ Маршрут завершён без ошибок. Максимум бочек на борту: {barge.max_barrels}")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
