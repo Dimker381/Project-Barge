@@ -1,19 +1,57 @@
+class Node:
+
+    def __init__(self, value, next_node=None):
+        self.value = value  # значение (тип топлива)
+        self.next = next_node  # ссылка на следующий узел (ниже по стеку)
+
+
+class Stack:
+
+    def __init__(self):
+        self.top_node = None  # вершина стека (верхняя бочка)
+        self.size = 0  # количество элементов в стеке
+
+    def push(self, value):
+        # Добавление элемента на вершину стека
+        self.top_node = Node(value, self.top_node)
+        self.size += 1
+
+    def pop(self):
+        # Удаление верхнего элемента стека
+        if self.is_empty():
+            raise IndexError("Стек пуст")
+        value = self.top_node.value
+        self.top_node = self.top_node.next
+        self.size -= 1
+        return value
+
+    def top(self):
+        # Получение значения верхнего элемента
+        if self.is_empty():
+            raise IndexError("Стек пуст")
+        return self.top_node.value
+
+    def is_empty(self):
+        # Проверка, пуст ли стек
+        return self.top_node is None
+
+
 class Barge:
     def __init__(self, num_compartments, max_capacity):
-        # Инициализация баржи с пустыми отсеками и ограничением по бочкам
-        self.compartments = [[] for _ in range(num_compartments + 1)]  # индексация с 1 (отсеки)
-        self.capacity = max_capacity  # ёмкость
+        # Инициализация баржи с пустыми отсеками, каждый представлен стеком
+        self.compartments = [Stack() for _ in range(num_compartments + 1)]  # индексация с 1
+        self.capacity = max_capacity  # ёмкость баржи
         self.total_barrels = 0  # текущее количество бочек
-        self.max_barrels = 0  # максимальное количество одновременно
+        self.max_barrels = 0  # максимальное количество одновременно находившихся на борту
         self.error = False
         self.error_message = ""
 
     def load(self, compartment, fuel_type):
         # Погрузка бочки в указанный отсек
-        self.compartments[compartment].append(fuel_type)
+        self.compartments[compartment].push(fuel_type)
         self.total_barrels += 1
 
-        # Проверка на переполнение
+        # Проверка на превышение допустимого количества бочек
         if self.total_barrels > self.capacity:
             self.error = True
             self.error_message = f"Превышено максимальное количество бочек на барже: {self.capacity}"
@@ -21,23 +59,24 @@ class Barge:
         self.max_barrels = max(self.max_barrels, self.total_barrels)
 
     def unload(self, compartment, fuel_type):
+        stack = self.compartments[compartment]
+
         # Проверка: отсек не должен быть пуст
-        if not self.compartments[compartment]:
+        if stack.is_empty():
             self.error = True
             self.error_message = f"Ошибка: отсек {compartment} пуст, нельзя извлечь бочку."
             return
 
         # Проверка соответствия типа топлива
-        top_fuel = self.compartments[compartment][-1]
-        if top_fuel != fuel_type:
+        if stack.top() != fuel_type:
             self.error = True
             self.error_message = (
-                f"Ошибка: ожидался вид топлива {fuel_type}, но в отсеке {compartment} сверху {top_fuel}."
+                f"Ошибка: ожидался вид топлива {fuel_type}, но в отсеке {compartment} сверху {stack.top()}."
             )
             return
 
         # Удаление бочки
-        self.compartments[compartment].pop()
+        stack.pop()
         self.total_barrels -= 1
 
     def process(self, operation, line_num=None):
@@ -75,6 +114,7 @@ class Barge:
             self.unload(compartment, fuel_type)
 
     def is_empty(self):
+        # Проверка: пуста ли баржа (все бочки выгружены)
         return self.total_barrels == 0
 
 
@@ -116,7 +156,7 @@ def main():
             print("🔁 Повторите ввод этой строки.\n")
             barge.error = False
             barge.error_message = ""
-            continue    # не увеличиваем счётчик — повтор ввода
+            continue  # не увеличиваем счётчик — повтор ввода
         else:
             i += 1
 
